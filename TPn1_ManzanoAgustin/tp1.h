@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
-//#include "funcionesTp1.c"
+//include "funcionesTp1.c"
 
 //define
-#define ALTO 50
+#define ALTO 80
 #define ANCHO 80
 
 //colors
@@ -15,9 +15,9 @@
 #define VERDE_T        "\x1b[32m"
 #define VERDE_F        "\x1b[42m"
 #define AMARILLO_T "\x1b[33m"
-#define    AMARILLO_F  "\x1b[43m"
+#define AMARILLO_F  "\x1b[43m"
 #define AZUL_T     "\x1b[34m"
-#define    AZUL_F      "\x1b[44m"
+#define AZUL_F      "\x1b[44m"
 #define MAGENTA_T  "\x1b[35m"
 #define MAGENTA_F  "\x1b[45m"
 #define CYAN_T     "\x1b[36m"
