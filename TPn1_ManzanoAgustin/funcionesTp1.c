@@ -207,7 +207,23 @@ void attacks(pokemons (*matriz)[ALTO], pokemons (*matrizAux)[ALTO]){
             matrizAux[i][j]=matriz[i][j];
 
             if(matriz[i][j].control){ //si es un pokemon activo
+                if(matriz[i][j].type[0] == 'w'){ 
                 
+                }
+                if(matriz[i][j].type[0] == 'f'){ 
+                
+                }
+                if(matriz[i][j].type[0] == 'g'){ 
+                
+                }
+                if(matriz[i][j].type[0] == 'n'){ 
+                
+                }
+                if(matriz[i][j].type[0] == 'p'){ 
+                
+                }
+
+
             }
             else{ //si es un pokemon inactivo
                 matrizAux[i][j].control=1;
