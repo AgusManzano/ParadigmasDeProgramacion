@@ -12,7 +12,6 @@ Paradigmas de la Programación
 int main(void){
 
     pokemons matriz[ANCHO][ALTO];
-    pokemons matrizAux[ANCHO][ALTO];
     
     //inicializo la matriz en 0
     inicializarMatriz(matriz);
@@ -21,10 +20,17 @@ int main(void){
 
     
     //ataques
-    attacks(matriz, matrizAux);
+    int i,j;
+    for(j=0; j<40;j++)
+    {
+        for(i=0;i<5;i++){
+            attacks(matriz);
+        }
+        mostrarMatriz(matriz);
+        printf("\n");
+    }
+        
 
-    mostrarMatriz(matrizAux);    
-    
     //imprimo el ppm
     //printPPM(matriz);
 

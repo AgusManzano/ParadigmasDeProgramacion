@@ -1,10 +1,26 @@
 #include <stdlib.h>
 #include <stdio.h>
-//include "funcionesTp1.c"
+
 
 //define
-#define ALTO 80
-#define ANCHO 80
+#define ALTO 40
+#define ANCHO 40
+
+//attacks
+#define FIRE_ATTACK 10.0
+#define WATER_ATTACK 7.0
+#define NORMAL_ATTACK 5.0
+#define GRASS_ATTACK 5.0
+#define PSY_ATTACK 10.0
+
+//HP
+#define FIRE_HP 80.0
+#define WATER_HP 110.0
+#define NORMAL_HP 100.0
+#define GRASS_HP 120.0
+#define PSY_HP 70.0
+ 
+
 
 //colors
 #define RESET_COLOR    "\x1b[0m"
