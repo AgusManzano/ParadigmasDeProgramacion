@@ -3,22 +3,22 @@
 
 
 //define
-#define ALTO 40
-#define ANCHO 40
+#define ALTO 200
+#define ANCHO 200
 
 //attacks
-#define FIRE_ATTACK 10.0
-#define WATER_ATTACK 7.0
-#define NORMAL_ATTACK 5.0
-#define GRASS_ATTACK 5.0
-#define PSY_ATTACK 10.0
+#define FIRE_ATTACK 1.2
+#define WATER_ATTACK 1.0
+#define NORMAL_ATTACK 1.0
+#define GRASS_ATTACK 0.9
+#define PSY_ATTACK 1.1
 
 //HP
-#define FIRE_HP 80.0
-#define WATER_HP 110.0
+#define FIRE_HP 95.0
+#define WATER_HP 100.0
 #define NORMAL_HP 100.0
-#define GRASS_HP 120.0
-#define PSY_HP 70.0
+#define GRASS_HP 105.0
+#define PSY_HP 90.0
  
 
 

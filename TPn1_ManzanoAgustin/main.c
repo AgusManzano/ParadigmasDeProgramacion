@@ -14,25 +14,28 @@ int main(void){
     pokemons matriz[ANCHO][ALTO];
     
     //inicializo la matriz en 0
-    inicializarMatriz(matriz);
+    initializeMatriz(matriz);
+    
     //muestro la matriz
-    mostrarMatriz(matriz);
-
+    //mostrarMatriz(matriz);
+    viewResults(matriz);
+    makePPM(matriz,"inicio.ppm");
     
     //ataques
     int i,j;
-    for(j=0; j<40;j++)
+    for(j=0; j<100;j++)
     {
-        for(i=0;i<5;i++){
+        for(i=0;i<10;i++){
             attacks(matriz);
         }
-        mostrarMatriz(matriz);
-        printf("\n");
+        //mostrarMatriz(matriz);
+        //viewResults(matriz);
+        //printf("\n");
     }
-        
+    
+    viewResults(matriz);
+    makePPM(matriz,"final.ppm");
 
-    //imprimo el ppm
-    //printPPM(matriz);
 
     return 0;
 }

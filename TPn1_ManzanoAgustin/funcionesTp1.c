@@ -12,15 +12,17 @@ typedef struct{
     float attack;
 }pokemons;
 
+//srand(time(NULL));
 
 //prototypes
 int RandInt(int lower, int upper,int count); 
-void inicializarMatriz(pokemons (*matriz)[ALTO]);
-void mostrarMatriz(pokemons (*matriz)[ALTO]);
-void printPPM(pokemons (*matriz)[ALTO]);
+void initializeMatriz(pokemons (*matriz)[ALTO]);
+void viewMatriz(pokemons (*matriz)[ALTO]);
+void makePPM(pokemons (*matriz)[ALTO],char *filename);
 void attacks(pokemons (*matriz)[ALTO]);
 void setPokemon(pokemons (*matriz)[ALTO],int i, int j, char type);
-void damageBooster(char type1, char type2);
+float damageBooster(char type1, char type2);
+void viewResults(pokemons (*matriz)[ALTO]);
 
 
 //Desarrollo de funciones
@@ -32,35 +34,35 @@ int RandInt(int lower, int upper, int count)
 }
 
 void setPokemon(pokemons (*matriz)[ALTO],int i, int j, char type){
+    matriz[i][j].control=1;
     if(type == 'f'){
         matriz[i][j].hp=FIRE_HP;
         matriz[i][j].attack=FIRE_ATTACK;
         strcpy(matriz[i][j].type, "fire");
     }
-    else if(type == 'w'){
+    if(type == 'w'){
         matriz[i][j].hp=WATER_HP;
         matriz[i][j].attack=WATER_ATTACK;
         strcpy(matriz[i][j].type, "water");
     }
-    else if(type == 'p'){
+    if(type == 'p'){
         matriz[i][j].hp=PSY_HP;
         matriz[i][j].attack=PSY_ATTACK;
         strcpy(matriz[i][j].type, "psychic");
     }
-    else if(type == 'n'){
+    if(type == 'n'){
         matriz[i][j].hp=NORMAL_HP;
-        matriz[i][j].attack=NORMAL_HP;
+        matriz[i][j].attack=NORMAL_ATTACK;
         strcpy(matriz[i][j].type, "normal");
     }
-    else if(type == 'g'){
+    if(type == 'g'){
         matriz[i][j].hp=GRASS_HP;
         matriz[i][j].attack=GRASS_ATTACK;
         strcpy(matriz[i][j].type, "glass");
     }
 }
 
-
-void inicializarMatriz(pokemons (*matriz)[ALTO]){
+void initializeMatriz(pokemons (*matriz)[ALTO]){
     
     int i,j;
     int aux;
@@ -73,7 +75,7 @@ void inicializarMatriz(pokemons (*matriz)[ALTO]){
             else{
                 matriz[i][j].control=0;
             }
-            
+    
             aux=RandInt(1,5,1);
             switch (aux)
             {
@@ -110,10 +112,10 @@ void inicializarMatriz(pokemons (*matriz)[ALTO]){
     }
 }
 
-void mostrarMatriz(pokemons (*matriz)[ALTO]){
+void viewMatriz(pokemons (*matriz)[ALTO]){
         
     int i,j;
-    
+    printf("\n");
     for(i=0; i<ALTO; i++){
         for(j=0; j<ANCHO; j++){
             switch (matriz[i][j].type[0])
@@ -168,13 +170,16 @@ void mostrarMatriz(pokemons (*matriz)[ALTO]){
     }
 }
 
-void printPPM(pokemons (*matriz)[ALTO]){
+void makePPM(pokemons (*matriz)[ALTO], char *filename){
 
         
     int i,j;
     
-    printf("P3\n%d %d\n255\n", ANCHO, ALTO);
-
+    FILE* fichero;
+    fichero = fopen(filename, "wt");
+    
+    fprintf(fichero, "P3\n%d %d\n255\n", ANCHO, ALTO);
+    
 
     for(i=0; i<ALTO; i++){
         for(j=0; j<ANCHO; j++){
@@ -182,41 +187,41 @@ void printPPM(pokemons (*matriz)[ALTO]){
             {
             case 'w':
                 if (matriz[i][j].control){
-                    printf("0 255 255 "); //aqua
+                    fprintf(fichero,"0 255 255 "); //aqua
                 }
                 else{
-                    printf("0 0 0 ");
+                    fprintf(fichero,"0 0 0 ");
                 }
                 break;
             case 'f':
                 if (matriz[i][j].control){
-                    printf("255 0 0 "); //red
+                    fprintf(fichero,"255 0 0 "); //red
                 }
                 else{
-                    printf("0 0 0 ");
+                    fprintf(fichero,"0 0 0 ");
                 }
                 break;
             case 'g':
                 if (matriz[i][j].control){
-                    printf("0 128 0 "); //green
+                    fprintf(fichero, "0 128 0 "); //green
                 }else{
-                    printf("0 0 0 ");
+                    fprintf(fichero,"0 0 0 ");
                 }
                 break;
             case 'n':
                 if (matriz[i][j].control){
-                    printf("255 255 255 ");
+                    fprintf(fichero, "255 255 255 ");
                 }
                 else{
-                    printf("0 0 0 ");
+                    fprintf(fichero,"0 0 0 ");
                 }
                 break;
             case 'p':
                 if (matriz[i][j].control){
-                    printf("255 0 255 "); //magenta
+                    fprintf(fichero,"255 0 255 "); //magenta
                 }
                 else{
-                    printf("0 0 0 ");
+                    fprintf(fichero,"0 0 0 ");
                 }
                 break;
             
@@ -224,8 +229,10 @@ void printPPM(pokemons (*matriz)[ALTO]){
                 break;             
             }
         }
-        printf("\n");
+        fprintf(fichero, "\n");
     }
+    fclose(fichero);
+    printf("Archivo %s creado con exito\n", filename);
 }
 
 void attacks(pokemons (*matriz)[ALTO]){
@@ -236,260 +243,84 @@ void attacks(pokemons (*matriz)[ALTO]){
         for(j=0; j<ANCHO; j++){
 
             if(matriz[i][j].control){ //si es un pokemon activo
-
-
-                if(matriz[i][j].type[0] == 'w'){ 
-                    
-                    if(matriz[i][j+1].control && j+1<ANCHO){
+                if(matriz[i][j+1].control && (j<ANCHO && i<ALTO)){ //right
+                    matriz[i][j].hp-=matriz[i][j+1].attack*damageBooster(matriz[i][j].type[0],matriz[i][j+1].type[0]);
+                    if(matriz[i][j].hp <= 0){
+                        matriz[i][j].control = 0;
+                        setPokemon(matriz, i, j, matriz[i][j+1].type[0]); 
+                    }
                         
-
+                }
+                if(matriz[i+1][j+1].control && (j<ANCHO && i<ALTO)){ //right down
+                    matriz[i][j].hp-=matriz[i+1][j+1].attack*damageBooster(matriz[i][j].type[0],matriz[i+1][j+1].type[0]);
+                    if(matriz[i][j].hp <= 0){
+                        matriz[i][j].control = 0;
+                        setPokemon(matriz, i, j, matriz[i+1][j+1].type[0]); 
+                    }
                         
-                        switch (matriz[i][j+1].type[0])
-                        {
-                        case 'f':
-                            matriz[i][j].hp-=matriz[i][j+1].attack*damageBooster(matriz[i][j].type[0],);
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                            setPokemon(matriz, i, j, 'f'); 
-                            break;
-                        case 'g':
-                            matriz[i][j].hp-=matriz[i][j+1].attack*2;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'g'); 
-                            break;
-                        case 'n':
-                            matriz[i][j].hp-=matriz[i][j+1].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'n'); 
-                            break;
-                        case 'p':
-                            matriz[i][j].hp-=matriz[i][j+1].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'p'); 
-                            break;
-                        case 'w':
-                            matriz[i][j].hp-=matriz[i][j+1].attack*0.5;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'w'); 
-                            break;
-                        default:
-                            break;             
-                        }
+                }
+                if(matriz[i+1][j].control && (j<ANCHO && i<ALTO)){ //down
+                    matriz[i][j].hp-=matriz[i+1][j].attack*damageBooster(matriz[i][j].type[0],matriz[i+1][j].type[0]);
+                    if(matriz[i][j].hp <= 0){
+                        matriz[i][j].control = 0;
+                        setPokemon(matriz, i, j, matriz[i+1][j].type[0]); 
                     }
+                        
                 }
-                if(matriz[i][j].type[0] == 'n'){ 
-                    if(matriz[i][j+1].control && j+1<ANCHO){
-                        switch (matriz[i][j+1].type[0])
-                        {
-                        case 'f':
-                            matriz[i][j].hp-=matriz[i][j+1].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'f'); 
-                            break;
-                        case 'g':
-                            matriz[i][j].hp-=matriz[i][j+1].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'g'); 
-                            break;
-                        case 'n':
-                            matriz[i][j].hp-=matriz[i][j+1].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'f'); 
-                            break;
-                        case 'p':
-                            matriz[i][j].hp-=matriz[i][j+1].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'p'); 
-                            break;
-                        case 'w':
-                            matriz[i][j].hp-=matriz[i][j+1].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'w'); 
-                            break;
-                        default:
-                            break;             
-                        }
+                if(matriz[i+1][j-1].control && (j<ANCHO && i<ALTO)){ //down left
+                    matriz[i][j].hp-=matriz[i+1][j-1].attack*damageBooster(matriz[i][j].type[0],matriz[i+1][j-1].type[0]);
+                    if(matriz[i][j].hp <= 0){
+                        matriz[i][j].control = 0;
+                        setPokemon(matriz, i, j, matriz[i+1][j-1].type[0]); 
                     }
+                        
                 }
-                if(matriz[i][j].type[0] == 'f'){ 
-                    if(matriz[i][j+1].control && j+1<ANCHO){
-                        switch (matriz[i][j+1].type[0])
-                        {
-                        case 'f':
-                            matriz[i][j].hp-=matriz[i][j+1].attack*0.5;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'f'); 
-                            break;
-                        case 'g':
-                            matriz[i][j].hp-=matriz[i][j+1].attack*0.5;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'g'); 
-                            break;
-                        case 'n':
-                            matriz[i][j].hp-=matriz[i][j+1].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'n'); 
-                            break;
-                        case 'p':
-                            matriz[i][j].hp-=matriz[i][j+1].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'p'); 
-                            break;
-                        case 'w':
-                            matriz[i][j].hp-=matriz[i][j+1].attack*2.0;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'w'); 
-                            break;
-                        default:
-                            break;             
-                        }
+                if(matriz[i][j-1].control && (j<ANCHO && i<ALTO)){ //left
+                    matriz[i][j].hp-=matriz[i][j-1].attack*damageBooster(matriz[i][j].type[0],matriz[i][j-1].type[0]);
+                    if(matriz[i][j].hp <= 0){
+                        matriz[i][j].control = 0;
+                        setPokemon(matriz, i, j, matriz[i][j-1].type[0]); 
                     }
+                        
                 }
-                if(matriz[i][j].type[0] == 'g'){ 
-                    if(matriz[i][j+1].control && j+1<ANCHO){
-                        switch (matriz[i][j+1].type[0])
-                        {
-                        case 'f':
-                            matriz[i][j].hp-=matriz[i][j].attack*2.0;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'f'); 
-                            break;
-                        case 'g':
-                            matriz[i][j].hp-=matriz[i][j].attack*0.5;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'g'); 
-                            break;
-                        case 'n':
-                            matriz[i][j].hp-=matriz[i][j].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'n'); 
-                            break;
-                        case 'p':
-                            matriz[i][j].hp-=matriz[i][j].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'p'); 
-                            break;
-                        case 'w':
-                            matriz[i][j].hp-=matriz[i][j].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'w'); 
-                            break;
-                        default:
-                            break;             
-                        }
+                if(matriz[i-1][j-1].control && (j<ANCHO && i<ALTO)){ //up left
+                    matriz[i][j].hp-=matriz[i-1][j-1].attack*damageBooster(matriz[i][j].type[0],matriz[i-1][j-1].type[0]);
+                    if(matriz[i][j].hp <= 0){
+                        matriz[i][j].control = 0;
+                        setPokemon(matriz, i, j, matriz[i-1][j-1].type[0]); 
                     }
+                        
                 }
-                if(matriz[i][j].type[0] == 'p'){ 
-                    if(matriz[i][j+1].control && j+1<ANCHO){
-                        switch (matriz[i][j+1].type[0])
-                        {
-                        case 'f':
-                            matriz[i][j].hp-=matriz[i][j].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'f'); 
-                            break;
-                        case 'g':
-                            matriz[i][j].hp-=matriz[i][j].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'g'); 
-                            break;
-                        case 'n':
-                            matriz[i][j].hp-=matriz[i][j].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'n'); 
-                            break;
-                        case 'p':
-                            matriz[i][j].hp-=matriz[i][j].attack*0.5;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'p'); 
-                            break;
-                        case 'w':
-                            matriz[i][j].hp-=matriz[i][j].attack;
-                            if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-                                setPokemon(matriz, i, j, 'w'); 
-                            break;
-                        default:
-                            break;             
-                        }
+                if(matriz[i-1][j].control && (j<ANCHO && i<ALTO)){ //up
+                    matriz[i][j].hp-=matriz[i-1][j].attack*damageBooster(matriz[i][j].type[0],matriz[i-1][j].type[0]);
+                    if(matriz[i][j].hp <= 0){
+                        matriz[i][j].control = 0;
+                        setPokemon(matriz, i, j, matriz[i-1][j].type[0]); 
                     }
+                        
                 }
-            }else{ //si es un pokemon inactivo
-                matriz[i][j].control=1;
-                if(j < ANCHO-1){
-                    switch (matriz[i][j+1].type[0])
-                            {
-                            case 'f':
-                                matriz[i][j].hp=FIRE_HP;
-                                matriz[i][j].attack=FIRE_ATTACK;
-                                break;
-                            case 'g':
-                                matriz[i][j].hp=GRASS_HP;
-                                matriz[i][j].attack=GRASS_ATTACK;
-                                break;
-                            case 'n':
-                                matriz[i][j].hp=NORMAL_HP;
-                                matriz[i][j].attack=NORMAL_ATTACK;
-                                break;
-                            case 'p':
-                                matriz[i][j].hp=PSY_HP;
-                                matriz[i][j].attack=PSY_ATTACK;
-                                break;
-                            case 'W':
-                                matriz[i][j].hp=WATER_HP;
-                                matriz[i][j].attack=WATER_ATTACK;
-                                break;
-                            default:
-                            break;             
-                        }
+                if(matriz[i-1][j+1].control && (j<ANCHO && i<ALTO)){ //up right
+                    matriz[i][j].hp-=matriz[i-1][j+1].attack*damageBooster(matriz[i][j].type[0],matriz[i-1][j+1].type[0]);
+                    if(matriz[i][j].hp <= 0){
+                        matriz[i][j].control = 0;
+                        setPokemon(matriz, i, j, matriz[i-1][j+1].type[0]); 
+                    }
+                        
                 }
-                    
-                }
+            }else{
+                setPokemon(matriz, i, j, matriz[i][j].type[0]);
             }
+        }
     }
 }
 
-void damage(pokemons (*matriz)[ALTO], int i, int j, int iprim, int jprim){
-    
-    switch (matriz[iprim][jprim].type[0])
-    {
-    case 'f':
-        if(matriz[i][j].type[0] == 'w')
-            matriz[i][j].hp-=matriz[iprim][jprim].attack*0.5;
-        
-        if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-            setPokemon(matriz, i, j, 'f'); 
-        break;
-    case 'g':
-        matriz[i][j].hp-=matriz[iprim][jprim].attack*2;
-        if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-            setPokemon(matriz, i, j, 'g'); 
-        break;
-    case 'n':
-        matriz[i][j].hp-=matriz[iprim][jprim].attack;
-        if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-            setPokemon(matriz, i, j, 'n'); 
-        break;
-    case 'p':
-        matriz[i][j].hp-=matriz[iprim][jprim].attack;
-        if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-            setPokemon(matriz, i, j, 'p'); 
-        break;
-    case 'w':
-        matriz[i][j].hp-=matriz[iprim][jprim].attack*0.5;
-        if(matriz[i][j].hp <= 0) //caso en el que el pokemon muera al recibir el ataque
-            setPokemon(matriz, i, j, 'w'); 
-        break;
-    default:
-        break;             
-    }
-}
-
-void damageBooster(char type1, char type2){
+float damageBooster(char type1, char type2){
     if(type1 == 'n' && (type2=='f' || type2=='w' || type2=='n' || type2=='g' || type2=='p'))
         return 1.0;
     else if(type1 == 'w' && (type2 == 'n' || type2 == 'p'))
             return 1.0;
     else if(type1 == 'w' && (type2 == 'f' || type2 == 'w'))
-            return 0.5:
+            return 0.5;
     else if(type1 == 'w' && type2 == 'g')
             return 2.0;
     else if(type1 == 'f' && (type2 == 'n' || type2 == 'p'))
@@ -508,4 +339,27 @@ void damageBooster(char type1, char type2){
             return 1.0;
     else if(type1 == 'p' && type2 == 'p')
             return 0.5;
+}
+
+void viewResults(pokemons (*matriz)[ALTO]){
+    int i,j;
+    int contFire=0, contWater=0, contGrass=0, contNormal=0, contPoison=0;
+    for(i=0;i<ALTO;i++){
+        for(j=0;j<ANCHO;j++){
+            if(matriz[i][j].control){
+                if(matriz[i][j].type[0] == 'f')
+                    contFire++;
+                else if(matriz[i][j].type[0] == 'w')
+                    contWater++;
+                else if(matriz[i][j].type[0] == 'g')
+                    contGrass++;
+                else if(matriz[i][j].type[0] == 'n')
+                    contNormal++;
+                else if(matriz[i][j].type[0] == 'p')
+                    contPoison++;
+            }
+        }
+    }
+    printf("\nStatus:");
+    printf("| Fire: %d | Water: %d | Grass: %d | Normal: %d | Psychic: %d |\n",contFire,contWater,contGrass,contNormal,contPoison);
 }
