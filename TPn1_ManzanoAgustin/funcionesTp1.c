@@ -1,10 +1,11 @@
-#include "tp1.h"
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "tp1.h"
+#include <unistd.h>
 //esctructura de mi pokemon
+
 typedef struct{
     int control;
     char type[10];
@@ -12,28 +13,31 @@ typedef struct{
     float attack;
 }pokemons;
 
-//srand(time(NULL));
-
 //prototypes
 int RandInt(int lower, int upper,int count); 
-void initializeMatriz(pokemons (*matriz)[ALTO]);
-void viewMatriz(pokemons (*matriz)[ALTO]);
-void makePPM(pokemons (*matriz)[ALTO],char *filename);
-void attacks(pokemons (*matriz)[ALTO]);
-void setPokemon(pokemons (*matriz)[ALTO],int i, int j, char type);
+void initializeMatriz(pokemons **matriz, int rows, int cols);
+void viewMatriz(pokemons **matriz, int rows, int cols);
+void makePPM(pokemons **matriz, int rows, int cols, int turn);
+void attacks(pokemons **matriz, int rows, int cols);
+void setPokemon(pokemons **matriz, int rows, int cols, char type);
 float damageBooster(char type1, char type2);
-void viewResults(pokemons (*matriz)[ALTO]);
+void viewResults(pokemons **matriz, int rows, int cols);
+void help(void);
+pokemons **grid_create(int rows, int cols);
+int validatePosicion(int rows, int cols, int i, int j);
+void subAttack(pokemons **matriz, int actualRow, int actualCol, int attackRow, int attackCol);
 
 
 //Desarrollo de funciones
 int RandInt(int lower, int upper, int count)
 {
+    
     int num = (rand() % (upper - lower + 1)) + lower;   
     
     return num;
 }
 
-void setPokemon(pokemons (*matriz)[ALTO],int i, int j, char type){
+void setPokemon(pokemons **matriz,int i, int j, char type){
     matriz[i][j].control=1;
     if(type == 'f'){
         matriz[i][j].hp=FIRE_HP;
@@ -62,13 +66,13 @@ void setPokemon(pokemons (*matriz)[ALTO],int i, int j, char type){
     }
 }
 
-void initializeMatriz(pokemons (*matriz)[ALTO]){
+void initializeMatriz(pokemons **matriz, int rows, int cols){
     
     int i,j;
     int aux;
 
-    for(i=0; i<ALTO; i++){
-        for(j=0; j<ANCHO; j++){
+    for(i=0; i<rows; i++){
+        for(j=0; j<cols; j++){
             if (RandInt(0,1,1)){
                 matriz[i][j].control=1;
             }
@@ -112,12 +116,12 @@ void initializeMatriz(pokemons (*matriz)[ALTO]){
     }
 }
 
-void viewMatriz(pokemons (*matriz)[ALTO]){
+void viewMatriz(pokemons **matriz, int rows, int cols){
         
     int i,j;
     printf("\n");
-    for(i=0; i<ALTO; i++){
-        for(j=0; j<ANCHO; j++){
+    for(i=0; i<rows; i++){
+        for(j=0; j<cols; j++){
             switch (matriz[i][j].type[0])
             {
             case 'w':
@@ -170,19 +174,21 @@ void viewMatriz(pokemons (*matriz)[ALTO]){
     }
 }
 
-void makePPM(pokemons (*matriz)[ALTO], char *filename){
+void makePPM(pokemons **matriz, int rows, int cols, int turn){
 
         
     int i,j;
-    
+    char filename[20];
+    sprintf(filename, "turn%d.ppm", turn);
+
     FILE* fichero;
     fichero = fopen(filename, "wt");
     
-    fprintf(fichero, "P3\n%d %d\n255\n", ANCHO, ALTO);
+    fprintf(fichero, "P3\n%d %d\n255\n", cols, rows);
     
 
-    for(i=0; i<ALTO; i++){
-        for(j=0; j<ANCHO; j++){
+    for(i=0; i<rows; i++){
+        for(j=0; j<cols; j++){
             switch (matriz[i][j].type[0])
             {
             case 'w':
@@ -232,83 +238,26 @@ void makePPM(pokemons (*matriz)[ALTO], char *filename){
         fprintf(fichero, "\n");
     }
     fclose(fichero);
-    printf("Archivo %s creado con exito\n", filename);
+    printf(".File %s created successfully.\n", filename);
 }
 
-void attacks(pokemons (*matriz)[ALTO]){
+void attacks(pokemons **matriz, int rows, int cols){
     
     int i, j;
 
-    for(i=0; i<ALTO; i++){
-        for(j=0; j<ANCHO; j++){
-
-            if(matriz[i][j].control){ //si es un pokemon activo
-                if(matriz[i][j+1].control && (j<ANCHO && i<ALTO)){ //right
-                    matriz[i][j].hp-=matriz[i][j+1].attack*damageBooster(matriz[i][j].type[0],matriz[i][j+1].type[0]);
-                    if(matriz[i][j].hp <= 0){
-                        matriz[i][j].control = 0;
-                        setPokemon(matriz, i, j, matriz[i][j+1].type[0]); 
-                    }
-                        
-                }
-                if(matriz[i+1][j+1].control && (j<ANCHO && i<ALTO)){ //right down
-                    matriz[i][j].hp-=matriz[i+1][j+1].attack*damageBooster(matriz[i][j].type[0],matriz[i+1][j+1].type[0]);
-                    if(matriz[i][j].hp <= 0){
-                        matriz[i][j].control = 0;
-                        setPokemon(matriz, i, j, matriz[i+1][j+1].type[0]); 
-                    }
-                        
-                }
-                if(matriz[i+1][j].control && (j<ANCHO && i<ALTO)){ //down
-                    matriz[i][j].hp-=matriz[i+1][j].attack*damageBooster(matriz[i][j].type[0],matriz[i+1][j].type[0]);
-                    if(matriz[i][j].hp <= 0){
-                        matriz[i][j].control = 0;
-                        setPokemon(matriz, i, j, matriz[i+1][j].type[0]); 
-                    }
-                        
-                }
-                if(matriz[i+1][j-1].control && (j<ANCHO && i<ALTO)){ //down left
-                    matriz[i][j].hp-=matriz[i+1][j-1].attack*damageBooster(matriz[i][j].type[0],matriz[i+1][j-1].type[0]);
-                    if(matriz[i][j].hp <= 0){
-                        matriz[i][j].control = 0;
-                        setPokemon(matriz, i, j, matriz[i+1][j-1].type[0]); 
-                    }
-                        
-                }
-                if(matriz[i][j-1].control && (j<ANCHO && i<ALTO)){ //left
-                    matriz[i][j].hp-=matriz[i][j-1].attack*damageBooster(matriz[i][j].type[0],matriz[i][j-1].type[0]);
-                    if(matriz[i][j].hp <= 0){
-                        matriz[i][j].control = 0;
-                        setPokemon(matriz, i, j, matriz[i][j-1].type[0]); 
-                    }
-                        
-                }
-                if(matriz[i-1][j-1].control && (j<ANCHO && i<ALTO)){ //up left
-                    matriz[i][j].hp-=matriz[i-1][j-1].attack*damageBooster(matriz[i][j].type[0],matriz[i-1][j-1].type[0]);
-                    if(matriz[i][j].hp <= 0){
-                        matriz[i][j].control = 0;
-                        setPokemon(matriz, i, j, matriz[i-1][j-1].type[0]); 
-                    }
-                        
-                }
-                if(matriz[i-1][j].control && (j<ANCHO && i<ALTO)){ //up
-                    matriz[i][j].hp-=matriz[i-1][j].attack*damageBooster(matriz[i][j].type[0],matriz[i-1][j].type[0]);
-                    if(matriz[i][j].hp <= 0){
-                        matriz[i][j].control = 0;
-                        setPokemon(matriz, i, j, matriz[i-1][j].type[0]); 
-                    }
-                        
-                }
-                if(matriz[i-1][j+1].control && (j<ANCHO && i<ALTO)){ //up right
-                    matriz[i][j].hp-=matriz[i-1][j+1].attack*damageBooster(matriz[i][j].type[0],matriz[i-1][j+1].type[0]);
-                    if(matriz[i][j].hp <= 0){
-                        matriz[i][j].control = 0;
-                        setPokemon(matriz, i, j, matriz[i-1][j+1].type[0]); 
-                    }
-                        
-                }
+    for(i=0; i<rows; i++){
+        for(j=0; j<cols; j++){
+            if(matriz[i][j].control && validatePosicion(rows, cols, i, j)){ //si es un pokemon activo
+                subAttack(matriz, i, j, i, j+1);
+                subAttack(matriz, i, j, i+1, j+1);   
+                subAttack(matriz, i, j, i+1, j);
+                subAttack(matriz, i, j, i+1, j-1);            
+                subAttack(matriz, i, j, i, j-1);  
+                subAttack(matriz, i, j, i-1, j-1);
+                subAttack(matriz, i, j, i-1, j);
+                subAttack(matriz, i, j, i-1, j+1);
             }else{
-                setPokemon(matriz, i, j, matriz[i][j].type[0]);
+                setPokemon(matriz, i, j, matriz[i][j+1].type[0]);
             }
         }
     }
@@ -341,11 +290,12 @@ float damageBooster(char type1, char type2){
             return 0.5;
 }
 
-void viewResults(pokemons (*matriz)[ALTO]){
+void viewResults(pokemons **matriz, int rows, int cols){
+
     int i,j;
     int contFire=0, contWater=0, contGrass=0, contNormal=0, contPoison=0;
-    for(i=0;i<ALTO;i++){
-        for(j=0;j<ANCHO;j++){
+    for(i=0;i<rows;i++){
+        for(j=0;j<cols;j++){
             if(matriz[i][j].control){
                 if(matriz[i][j].type[0] == 'f')
                     contFire++;
@@ -362,4 +312,75 @@ void viewResults(pokemons (*matriz)[ALTO]){
     }
     printf("\nStatus:");
     printf("| Fire: %d | Water: %d | Grass: %d | Normal: %d | Psychic: %d |\n",contFire,contWater,contGrass,contNormal,contPoison);
+}
+
+pokemons **grid_create(int rows, int cols){
+
+    pokemons **m = malloc(sizeof(pokemons *) * rows);
+
+    if (NULL == m) {
+        return NULL;
+    }
+
+    for (int i = 0; i < rows; i++) {
+        m[i] = malloc(cols * sizeof(pokemons));
+        if (NULL == m[i]) {
+            while (i--) {
+                free(m[i]);
+            }
+            free(m);
+            return NULL;
+        }
+    }
+    return m;
+}
+
+void help(void){
+    printf("Entering...\n");
+    printf("--width  (-w)   Number of columns in the matrix.\n");
+    printf("--height  (-H)  Number of rows in the matrix.\n");
+    printf("--seed  (-s)    Seed for the random number generator.\n");
+    printf("-n              Number of iterations.(0 = only final)\n");
+    printf("--help  (-h)    Show this help.\n");
+    printf("--turns  (-t)   Number of turns.\n");
+    printf("--mode (-m)    Mode of the game: \n\t\t\t\t1--Display by console (max 100x100)\n\t\t\t\t Different--Display PPM\n");
+}
+
+int validatePosicion(int rows, int cols, int i, int j){
+    if(i<1 || i>=rows-1 || j<1 || j>=cols-1)
+        return 0;
+    else
+        return 1;
+}
+
+void subAttack(pokemons **matriz, int actualRow, int actualCol, int attackRow, int attackCol){
+    if(matriz[attackRow][attackCol].control){ //up right
+        matriz[actualRow][actualCol].hp-=matriz[attackRow][attackCol].attack*damageBooster(matriz[actualRow][actualCol].type[0],matriz[attackRow][attackCol].type[0]);
+        if(matriz[actualRow][actualCol].hp <= 0){
+            matriz[actualRow][actualCol].control = 0;
+            setPokemon(matriz, actualRow, actualCol, matriz[attackRow][attackCol].type[0]); 
+        }             
+    }
+}
+
+void play(pokemons **matriz, int rows, int cols, int maxTurns, int n, int mode){
+    int j=0;
+    if (n==0)
+        makePPM(matriz, rows, cols, 0);
+    for(j=0; j<maxTurns;j++)
+    {
+        if (n != 0){
+            if(j % n == 0)
+                if (mode==1){
+                    viewMatriz(matriz, rows, cols);
+                    sleep(1);
+                }else{
+                    makePPM(matriz,rows,cols, j);
+                }
+                
+        }
+        attacks(matriz,rows,cols);
+        
+    }
+    makePPM(matriz,rows,cols, j);
 }
