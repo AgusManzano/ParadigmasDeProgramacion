@@ -13,6 +13,7 @@ typedef struct{
     float attack;
 }pokemons;
 
+
 //prototypes
 int RandInt(int lower, int upper,int count); 
 void initializeMatriz(pokemons **matriz, int rows, int cols);
@@ -26,7 +27,7 @@ void help(void);
 pokemons **grid_create(int rows, int cols);
 int validatePosicion(int rows, int cols, int i, int j);
 void subAttack(pokemons **matriz, int actualRow, int actualCol, int attackRow, int attackCol);
-
+int fParser(int argc, char **argv, int *rows, int *cols, int *n, int *maxTurns, int *mode);
 
 //Desarrollo de funciones
 int RandInt(int lower, int upper, int count)
@@ -311,7 +312,9 @@ void viewResults(pokemons **matriz, int rows, int cols){
         }
     }
     printf("\nStatus:");
-    printf("| Fire: %d | Water: %d | Grass: %d | Normal: %d | Psychic: %d |\n",contFire,contWater,contGrass,contNormal,contPoison);
+
+    printf("| Fire: %d \n| Water: %d \n| Grass: %d \n| Normal: %d \n| Psychic: %d |\n",contFire,contWater,contGrass,contNormal,contPoison);
+
 }
 
 pokemons **grid_create(int rows, int cols){
@@ -376,11 +379,33 @@ void play(pokemons **matriz, int rows, int cols, int maxTurns, int n, int mode){
                     sleep(1);
                 }else{
                     makePPM(matriz,rows,cols, j);
-                }
-                
+                }   
         }
         attacks(matriz,rows,cols);
-        
     }
     makePPM(matriz,rows,cols, j);
+}
+
+int fParser(int argc, char **argv, int *rows, int *cols, int *n, int *maxTurns, int *mode){
+    int i;
+
+    for(i=0;i<argc;i++){
+        if(strcmp(argv[i],"--help")==0 || strcmp(argv[i],"-h")==0){
+            help();
+            return EXIT_FAILURE;
+        }else if(strcmp(argv[i],"--width")==0||strcmp(argv[i],"-w")==0){
+            *cols = atoi(argv[i+1]);
+        }else if(strcmp(argv[i],"--height")==0 || strcmp(argv[i],"-H")==0){
+            *rows = atoi(argv[i+1]);
+        }else if(strcmp(argv[i],"-n")==0){
+            *n = atoi(argv[i+1]);
+        }else if(strcmp(argv[i],"--seed")==0 || strcmp(argv[i],"-s")==0){
+            srand(atoi(argv[i+1]));
+        }else if(strcmp(argv[i],"--turns")==0 || strcmp(argv[i],"-t")==0){
+            *maxTurns = atoi(argv[i+1]);
+        }else if(strcmp(argv[i],"--mode")==0 || strcmp(argv[i],"-m")==0){
+            *mode = atoi(argv[i+1]);
+        }
+    }
+    return EXIT_SUCCESS;
 }

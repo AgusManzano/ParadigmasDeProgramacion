@@ -22,4 +22,3 @@
 #define MAGENTA_F  "\x1b[45m"
 #define CYAN_F     "\x1b[46m"
 #define BLANCO_F   "\x1b[47m"
-
