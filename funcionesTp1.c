@@ -380,6 +380,10 @@ void play(pokemons **matriz, int rows, int cols, int maxTurns, int n, int mode){
 int fParser(int argc, char **argv, int *rows, int *cols, int *n, int *maxTurns, int *mode, int *cPokemons){
     int i;
 
+    if(argc == 1){
+        help();
+        return 0;
+    }
     for(i=0;i<argc;i++){
         if(strcmp(argv[i],"--help")==0 || strcmp(argv[i],"-h")==0){
             help();
