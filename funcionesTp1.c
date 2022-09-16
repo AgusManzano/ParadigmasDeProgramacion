@@ -2,9 +2,8 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
-#include "tp1.h"
 #include <unistd.h>
-//esctructura de mi pokemon
+#include "tp1.h"
 
 
 //Desarrollo de funciones
@@ -290,20 +289,21 @@ void viewResults(pokemons **matriz, int rows, int cols, int cPokemons){
         }
     }
     printf("| Status: |\n");
+    printf("-------------------------------\n");
     if(contFire!=0){
-        printf("| Fire:   |%7d|\n", contFire);
+        printf("| Fire:   |%7d|%7.2f%%|\n", contFire, (float)(contFire*100)/(rows*cols));
     }
     if(contWater!=0){
-        printf("| Water:  |%7d|\n", contWater);
+        printf("| Water:  |%7d|%7.2f%%|\n", contWater, (float)(contWater*100)/(rows*cols));
     }
     if(contGrass!=0){
-        printf("| Grass:  |%7d|\n", contGrass);
+        printf("| Grass:  |%7d|%7.2f%%|\n", contGrass, (float)(contGrass*100)/(rows*cols));
     }
     if(contNormal!=0){
-        printf("| Normal: |%7d|\n", contNormal);
+        printf("| Normal: |%7d|%7.2f%%|\n", contNormal, (float)(contNormal*100)/(rows*cols));
     }
     if(contPoison!=0){
-        printf("| Poison: |%7d|\n", contPoison);
+        printf("| Poison: |%7d|%7.2f%%|\n", contPoison, (float)(contPoison*100)/(rows*cols));
     }
 }
 

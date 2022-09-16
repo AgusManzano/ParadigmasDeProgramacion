@@ -23,6 +23,7 @@
 #define CYAN_F     "\x1b[46m"
 #define BLANCO_F   "\x1b[47m"
 
+//pokemons struct
 typedef struct{
     int control;
     char type[10];
